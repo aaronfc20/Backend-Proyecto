@@ -3,6 +3,8 @@ const cors = require('cors');
 const sequelize = require('./config/database');
 const userRoutes = require('./routes/users');
 const authRoutes = require('./routes/auth');  // Importar las rutas de autenticación
+const citaRoutes = require('./routes/citas');
+
 
 const app = express();
 const port = 3001;
@@ -24,6 +26,8 @@ app.use('/api/users', userRoutes);
 
 // Usar las rutas para autenticación (login)
 app.use('/api/auth', authRoutes);  // Agregar la ruta de autenticación
+
+app.use('/citas', citaRoutes);
 
 app.get('/', (req, res) => {
     res.send('Bienvenido al Sistema de Historial Médico');
