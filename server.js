@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const patientRoutes = require('./routes/patients');
 require('dotenv').config();
+const citaRoutes = require('./routes/citas'); // Importa las rutas de citas
 
 const app = express();
 app.use(cors({
@@ -24,6 +25,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 // Rutas
 app.use('/patients', patientRoutes);
+app.use('/citas', citaRoutes); // Agregar las rutas de citas
 
 // Middleware para manejar errores
 app.use((err, req, res, next) => {
