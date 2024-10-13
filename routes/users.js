@@ -1,9 +1,30 @@
-// routes/users.js
+// routes/user.js
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 
 const router = express.Router();
+
+class UserFactory {
+    static createUser(data) {
+        if (data.role === 'user') {
+            return new User({
+                name: data.name,
+                dni: data.dniOrCode,
+                password: data.password,
+                role: 'user',
+            });
+        } else if (data.role === 'doctor') {
+            return new User({
+                name: data.name,
+                colegiatura: data.dniOrCode,
+                password: data.password,
+                role: 'doctor',
+            });
+        }
+        throw new Error('Rol inválido');
+    }
+}
 
 // Ruta para registrar usuarios o doctores
 router.post('/register', async (req, res) => {
@@ -12,28 +33,13 @@ router.post('/register', async (req, res) => {
     try {
         // Encriptar la contraseña
         const hashedPassword = await bcrypt.hash(password, 10);
-
-        let user;
-        if (role === 'user') {
-            // Crear un usuario
-            user = await User.create({
-                name,
-                dni: dniOrCode,
-                password: hashedPassword,
-                role: 'user'
-            });
-        } else if (role === 'doctor') {
-            // Crear un doctor
-            user = await User.create({
-                name,
-                colegiatura: dniOrCode,
-                password: hashedPassword,
-                role: 'doctor'
-            });
-        } else {
-            return res.status(400).json({ error: 'Rol inválido. Debe ser "user" o "doctor".' });
-        }
-
+        
+        // Crear usuario usando la fábrica
+        const user = UserFactory.createUser({ name, dniOrCode, password: hashedPassword, role });
+        
+        // Guardar el usuario en la base de datos
+        await user.save();
+        
         res.status(201).json({ message: `Cuenta creada con éxito`, user });
     } catch (error) {
         console.error('Error al registrar:', error);

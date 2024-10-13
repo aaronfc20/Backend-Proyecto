@@ -1,29 +1,31 @@
-const express = require('express');
-const router = express.Router();
-const Cita = require('../models/Cita');
-
-// Ruta para obtener todas las citas
-
-router.get('/', async (req, res) => {
-    try {
-        const citas = await Cita.findAll(); // Busca todas las citas en la base de datos
-        res.json(citas); // Devuelve las citas en formato JSON
-    } catch (error) {
-        res.status(500).json({ message: 'Error al obtener las citas' });
+// commands/CreateCitaCommand.js
+class CreateCitaCommand {
+    constructor(citaData) {
+        this.citaData = citaData;
     }
-});
 
+    async execute() {
+        try {
+            const nuevaCita = await Cita.create(this.citaData);
+            return nuevaCita;
+        } catch (error) {
+            throw new Error('Error al crear la cita');
+        }
+    }
+}
 
+// Uso en routes/citas.js
 router.post('/', async (req, res) => {
     const { fecha, hora, pacienteId, doctorId } = req.body;
 
+    const createCitaCommand = new CreateCitaCommand({ fecha, hora, pacienteId, doctorId });
+
     try {
-        const nuevaCita = await Cita.create({ fecha, hora, pacienteId, doctorId });
+        const nuevaCita = await createCitaCommand.execute();
         res.status(201).json(nuevaCita);
     } catch (error) {
-        res.status(500).json({ message: 'Error al crear la cita' });
+        res.status(500).json({ message: error.message });
     }
 });
 
-module.exports = router;
 
