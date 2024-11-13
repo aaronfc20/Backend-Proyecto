@@ -1,17 +1,37 @@
-const mongoose = require('mongoose');
+// models/Patient.js
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
 
-const patientSchema = new mongoose.Schema({
-    nombreCompleto: { type: String, required: true }, // Usar solo nombreCompleto
-    dateOfBirth: { type: Date, required: true },
-    doctor: { type: String, required: true },
-    specialty: { type: String, required: true },
-    diagnosis: { type: String, required: true },
-    treatment: { type: String, required: true },
-    dni: { type: String, required: true }, // Agregar el campo DNI
+const Patient = sequelize.define('Patient', {
+    nombreCompleto: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    dateOfBirth: {
+        type: DataTypes.DATEONLY,
+        allowNull: false
+    },
+    doctor: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    specialty: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    diagnosis: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    treatment: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    dni: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true
+    }
 });
 
-const Patient = mongoose.model('Patient', patientSchema);
-
 module.exports = Patient;
-
-
