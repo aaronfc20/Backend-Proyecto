@@ -1,4 +1,8 @@
-// commands/CreateCitaCommand.js
+const express = require('express');
+const router = express.Router();
+const Cita = require('../models/Cita'); // Asegúrate de que la ruta al modelo sea correcta
+
+// Clase CreateCitaCommand definida en el mismo archivo
 class CreateCitaCommand {
     constructor(citaData) {
         this.citaData = citaData;
@@ -14,10 +18,9 @@ class CreateCitaCommand {
     }
 }
 
-// Uso en routes/citas.js
+// Ruta para crear una cita
 router.post('/', async (req, res) => {
     const { fecha, hora, pacienteId, doctorId } = req.body;
-
     const createCitaCommand = new CreateCitaCommand({ fecha, hora, pacienteId, doctorId });
 
     try {
@@ -28,4 +31,4 @@ router.post('/', async (req, res) => {
     }
 });
 
-
+module.exports = router; // Asegúrate de exportar el router al final
