@@ -1,3 +1,4 @@
+// auth.js
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -21,7 +22,7 @@ router.post(
 
         try {
             let user;
-            console.log(`Rol recibido: ${role}, DNI o código de colegiatura recibido: ${dniOrCode}`); // Verificar rol y DNI o código
+            console.log(`Rol recibido: ${role}, DNI o código de colegiatura recibido: ${dniOrCode}`);
 
             if (role === 'user') {
                 // Buscar por DNI si es usuario
@@ -39,7 +40,7 @@ router.post(
                 }
             }
 
-            console.log('Usuario o médico encontrado:', user.name); // Verificar que el usuario fue encontrado
+            console.log('Usuario o médico encontrado:', user.nombres); // Verificar que el usuario fue encontrado
 
             // Comparar la contraseña con bcrypt
             const isMatch = await bcrypt.compare(password, user.password);
@@ -59,7 +60,25 @@ router.post(
                 (err, token) => {
                     if (err) throw err;
                     console.log('Token generado:', token);
-                    res.json({ token });
+
+                    // Enviar el token y todos los datos del usuario al frontend
+                    res.json({
+                        token,
+                        user: {
+                            id: user.id,
+                            dni: user.dni,
+                            apellidoPaterno: user.apellidoPaterno,
+                            apellidoMaterno: user.apellidoMaterno,
+                            nombres: user.nombres,
+                            fechaNacimiento: user.fechaNacimiento,
+                            numeroCelular: user.numeroCelular,
+                            genero: user.genero,
+                            correoElectronico: user.correoElectronico,
+                            role: user.role,
+                            createdAt: user.createdAt,
+                            updatedAt: user.updatedAt
+                        }
+                    });
                 }
             );
         } catch (err) {

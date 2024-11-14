@@ -22,6 +22,7 @@ sequelize.sync()
         console.error('Error al sincronizar la base de datos:', err);
     });
 
+
 // Configurar las rutas
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);

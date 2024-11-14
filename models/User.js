@@ -3,18 +3,38 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
 const User = sequelize.define('User', {
-    name: {
+    dni: {
+        type: DataTypes.STRING,
+        allowNull: true, // DNI solo para usuarios
+        unique: true
+    },
+    apellidoPaterno: {
         type: DataTypes.STRING,
         allowNull: false
     },
-    dni: {
+    apellidoMaterno: {
         type: DataTypes.STRING,
-        allowNull: true, // Sólo para usuarios
-        unique: true
+        allowNull: false
     },
-    colegiatura: {
+    nombres: {
         type: DataTypes.STRING,
-        allowNull: true, // Sólo para doctores
+        allowNull: false
+    },
+    fechaNacimiento: {
+        type: DataTypes.DATEONLY,
+        allowNull: false
+    },
+    numeroCelular: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    genero: {
+        type: DataTypes.ENUM('masculino', 'femenino'),
+        allowNull: false
+    },
+    correoElectronico: {
+        type: DataTypes.STRING,
+        allowNull: false,
         unique: true
     },
     password: {

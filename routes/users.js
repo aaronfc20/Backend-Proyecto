@@ -5,44 +5,50 @@ const User = require('../models/User');
 
 const router = express.Router();
 
-class UserFactory {
-    static createUser(data) {
-        if (data.role === 'user') {
-            return new User({
-                name: data.name,
-                dni: data.dniOrCode,
-                password: data.password,
-                role: 'user',
-            });
-        } else if (data.role === 'doctor') {
-            return new User({
-                name: data.name,
-                colegiatura: data.dniOrCode,
-                password: data.password,
-                role: 'doctor',
-            });
-        }
-        throw new Error('Rol inválido');
-    }
-}
-
-// Ruta para registrar usuarios o doctores
+// Ruta para registrar usuarios
+// Ruta para registrar usuarios
 router.post('/register', async (req, res) => {
-    const { name, dniOrCode, password, role } = req.body;
+    const {
+        dni,
+        apellidoPaterno,
+        apellidoMaterno,
+        nombres,
+        fechaNacimiento,
+        numeroCelular,
+        genero,
+        correoElectronico,
+        password
+    } = req.body;
+
+    console.log("Datos recibidos:", req.body); // Registro de datos recibidos
 
     try {
         // Encriptar la contraseña
         const hashedPassword = await bcrypt.hash(password, 10);
-        
-        // Crear usuario usando la fábrica
-        const user = UserFactory.createUser({ name, dniOrCode, password: hashedPassword, role });
-        
-        // Guardar el usuario en la base de datos
-        await user.save();
-        
-        res.status(201).json({ message: `Cuenta creada con éxito`, user });
+
+        // Crear usuario con los datos proporcionados
+        const user = await User.create({
+            dni,
+            apellidoPaterno,
+            apellidoMaterno,
+            nombres,
+            fechaNacimiento,
+            numeroCelular,
+            genero,
+            correoElectronico,
+            password: hashedPassword,
+            role: 'user',
+        });
+
+        res.status(201).json({ message: 'Cuenta creada con éxito', user });
     } catch (error) {
         console.error('Error al registrar:', error);
+
+        // Detecta errores específicos de Sequelize, como constraint violations
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            return res.status(400).json({ error: 'El DNI o correo electrónico ya están registrados' });
+        }
+
         res.status(500).json({ error: 'Error al crear la cuenta' });
     }
 });
