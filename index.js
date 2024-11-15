@@ -12,10 +12,24 @@ const patientRoutes = require('./routes/patients');
 const medicoRoutes = require('./routes/medicos');
 const horarioRoutes = require('./routes/horarios'); // Rutas de horarios
 
+const cron = require('node-cron');
+const moment = require('moment');
+const nodemailer = require('nodemailer');
+const { Op } = require('sequelize');
+const { sendEmail } = require('./servicio/email');
 
 
 const app = express();
 const port = 3001;
+
+// Configuración del transporter para nodemailer
+const transporter = nodemailer.createTransport({
+    service: 'gmail', // Cambia esto si usas otro proveedor
+    auth: {
+        user: 'tu-email@gmail.com', // Cambia esto por tu correo
+        pass: 'tu-contraseña-app', // Usa una contraseña de aplicación si usas Gmail
+    },
+});
 
 // Middlewares
 app.use(express.json());
@@ -99,10 +113,6 @@ cron.schedule('0 9 * * *', async () => { // Se ejecutará todos los días a las 
         console.error('Error al ejecutar la tarea programada:', error);
     }
 });
-
-
-
-
 
 
 // Iniciar el servidor
