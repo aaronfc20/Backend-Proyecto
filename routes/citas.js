@@ -26,7 +26,7 @@ router.post('/send-reminder/:id', async (req, res) => {
         const patientText = `Hola ${patient.nombreCompleto},\n\nTe recordamos que tienes una cita programada para el día ${cita.fecha} a las ${cita.hora}.\n\nGracias,`;
 
         const doctorSubject = 'Recordatorio de Cita con Paciente';
-        const doctorText = `Hola Dr. ${doctor.name},\n\nLe recordamos que tiene una cita programada con el paciente ${patient.nombreCompleto} (DNI: ${patient.dni}) el día ${cita.fecha} a las ${cita.hora}.\n\nGracias,`;
+        const doctorText = `Hola Dr. ${doctor.apellidoPaterno},\n\nLe recordamos que tiene una cita programada con el paciente ${patient.nombreCompleto} (DNI: ${patient.dni}) el día ${cita.fecha} a las ${cita.hora}.\n\nGracias,`;
 
         // Enviar correos
         await sendEmail(patient.email, patientSubject, patientText);

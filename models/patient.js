@@ -11,6 +11,11 @@ const Patient = sequelize.define('Patient', {
         type: DataTypes.DATEONLY,
         allowNull: false
     },
+    correoElectronico: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true
+    },
     doctor: {
         type: DataTypes.STRING,
         allowNull: false
