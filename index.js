@@ -1,16 +1,15 @@
-// index.js
-const bcrypt = require('bcryptjs');
 const express = require('express');
 const cors = require('cors');
 const sequelize = require('./config/database'); // Conexión a PostgreSQL
 const Medico = require('./models/Médico'); // Importa el modelo de Médico
-const medicosData = require('./data/medicos.json'); // Importa los datos de médicos
+const Horario = require('./models/horario'); // Importa el modelo de Horario
 
 const userRoutes = require('./routes/users');
 const authRoutes = require('./routes/auth');
 const citaRoutes = require('./routes/citas');
 const patientRoutes = require('./routes/patients');
 const medicoRoutes = require('./routes/medicos');
+const horarioRoutes = require('./routes/horarios'); // Rutas de horarios
 
 const app = express();
 const port = 3001;
@@ -19,41 +18,12 @@ const port = 3001;
 app.use(express.json());
 app.use(cors());
 
-// Sincronizar la base de datos con Sequelize y cargar los datos de médicos
+// Sincronizar la base de datos con Sequelize y cargar los datos de médicos y horarios
 sequelize.sync({ alter: true })
     .then(async () => {
         console.log('Base de datos sincronizada');
-
-        // Verifica si existen médicos en la base de datos antes de cargarlos
-        const medicosExistentes = await Medico.findAll();
-        if (medicosExistentes.length === 0) {
-            // Cifrar contraseñas antes de insertar
-            const medicosConCredenciales = await Promise.all(
-                medicosData.map(async (medico) => {
-                    const hashedPassword = await bcrypt.hash(medico.password, 10);
-                    console.log(`Médico: ${medico.nombres} - Contraseña cifrada: ${hashedPassword}`);
-                    return { ...medico, password: hashedPassword };
-                })
-            );
-
-            // Insertar médicos
-            await Medico.bulkCreate(medicosConCredenciales);
-            console.log('Médicos cargados en la base de datos');
-        } else {
-            console.log('Los médicos ya existen en la base de datos, no se agregaron nuevos registros.');
-
-            // Actualizar contraseñas de médicos existentes si no están cifradas
-            await Promise.all(
-                medicosExistentes.map(async (medico) => {
-                    if (!medico.password.startsWith('$2a$')) {
-                        const hashedPassword = await bcrypt.hash(medico.password, 10);
-                        medico.password = hashedPassword;
-                        await medico.save();
-                        console.log(`Contraseña de médico ${medico.nombres} actualizada a una versión cifrada.`);
-                    }
-                })
-            );
-        }
+        
+        // Aquí puedes cargar los horarios si aún no existen en la base de datos.
     })
     .catch(err => {
         console.error('Error al sincronizar la base de datos:', err);
@@ -65,6 +35,7 @@ app.use('/api/auth', authRoutes);
 app.use('/citas', citaRoutes);
 app.use('/patients', patientRoutes);
 app.use('/api/medicos', medicoRoutes);
+app.use('/api/horarios', horarioRoutes); // Usar las rutas de horarios
 
 // Ruta principal
 app.get('/', (req, res) => {
@@ -75,3 +46,4 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
     console.log(`Servidor corriendo en http://localhost:${port}`);
 });
+
