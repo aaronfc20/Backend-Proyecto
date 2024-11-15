@@ -45,6 +45,66 @@ app.get('/', (req, res) => {
     res.send('Bienvenido al Sistema de Historial Médico');
 });
 
+// Tarea programada con node-cron para enviar recordatorios de citas
+cron.schedule('0 9 * * *', async () => { // Se ejecutará todos los días a las 9:00 AM
+    console.log('Ejecutando tarea programada para enviar recordatorios de citas...');
+
+    try {
+        const citasProximas = await Cita.findAll({
+            where: {
+                fecha: {
+                    [Op.eq]: moment().add(3, 'days').format('YYYY-MM-DD'), // Citas dentro de 3 días
+                },
+            },
+            include: [
+                { model: Patient, as: 'paciente' },
+                { model: Medico, as: 'medico' },
+            ],
+        });
+
+        citasProximas.forEach(async (cita) => {
+            const patient = cita.paciente;
+            const doctor = cita.medico;
+
+            if (!patient || !doctor) {
+                console.error('Faltan datos del paciente o médico en la cita:', cita.id);
+                return;
+            }
+
+            const doctorName = `${doctor.nombres} ${doctor.apellidoPaterno} ${doctor.apellidoMaterno}`;
+            const patientEmail = patient.correoElectronico;
+            const doctorEmail = doctor.correoElectronico;
+
+            // Configuración del correo
+            const mailOptions = {
+                from: '"Sistema Médico" <no-reply@tuapp.com>',
+                to: `${patientEmail}, ${doctorEmail}`, // Enviar a ambos
+                subject: 'Recordatorio de Cita Médica',
+                text: `Hola, esta es una notificación sobre la cita programada:\n\n
+                - Paciente: ${patient.nombreCompleto}
+                - Médico: ${doctorName}
+                - Fecha: ${cita.fecha}
+                - Hora: ${cita.hora}\n\n
+                Por favor, asegúrate de estar presente a tiempo.`,
+            };
+
+            try {
+                await transporter.sendMail(mailOptions);
+                console.log(`Correo enviado exitosamente para la cita ID ${cita.id}`);
+            } catch (error) {
+                console.error(`Error al enviar el correo para la cita ID ${cita.id}:`, error);
+            }
+        });
+    } catch (error) {
+        console.error('Error al ejecutar la tarea programada:', error);
+    }
+});
+
+
+
+
+
+
 // Iniciar el servidor
 app.listen(port, () => {
     console.log(`Servidor corriendo en http://localhost:${port}`);
