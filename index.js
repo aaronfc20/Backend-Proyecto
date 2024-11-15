@@ -3,6 +3,7 @@ const cors = require('cors');
 const sequelize = require('./config/database'); // Conexión a PostgreSQL
 const Medico = require('./models/Médico'); // Importa el modelo de Médico
 const Horario = require('./models/horario'); // Importa el modelo de Horario
+const { Cita, Patient, Medico } = require('./models/Asociaciones');
 
 const userRoutes = require('./routes/users');
 const authRoutes = require('./routes/auth');
@@ -10,6 +11,8 @@ const citaRoutes = require('./routes/citas');
 const patientRoutes = require('./routes/patients');
 const medicoRoutes = require('./routes/medicos');
 const horarioRoutes = require('./routes/horarios'); // Rutas de horarios
+
+
 
 const app = express();
 const port = 3001;

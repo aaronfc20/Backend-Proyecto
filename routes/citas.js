@@ -29,8 +29,8 @@ router.post('/send-reminder/:id', async (req, res) => {
         const doctorText = `Hola Dr. ${doctor.apellidoPaterno},\n\nLe recordamos que tiene una cita programada con el paciente ${patient.nombreCompleto} (DNI: ${patient.dni}) el día ${cita.fecha} a las ${cita.hora}.\n\nGracias,`;
 
         // Enviar correos
-        await sendEmail(patient.email, patientSubject, patientText);
-        await sendEmail(doctor.email, doctorSubject, doctorText);
+        await sendEmail(patient.correoElectronico, patientSubject, patientText);
+        await sendEmail(doctor.correoElectronico, doctorSubject, doctorText);
 
         res.status(200).json({ message: 'Correos enviados con éxito' });
     } catch (error) {
