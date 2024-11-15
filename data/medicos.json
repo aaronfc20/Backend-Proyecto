@@ -1,0 +1,112 @@
+[
+    {
+        "nombres": "Juan",
+        "apellidoPaterno": "García",
+        "apellidoMaterno": "Martínez",
+        "especialidad": "Medicina General",
+        "sede": "San Isidro",
+        "consultorio": "301",
+        "horarios": ["14:00", "15:00", "16:00", "17:00"],
+        "correoElectronico": "juan.garcia@gmail.com",
+        "password": "123"
+    },
+    {
+        "nombres": "Carlos",
+        "apellidoPaterno": "Pérez",
+        "apellidoMaterno": "López",
+        "especialidad": "Medicina General",
+        "sede": "Miraflores",
+        "consultorio": "302",
+        "horarios": ["14:00", "15:00", "16:00", "17:00"],
+        "correoElectronico": "carlos.perez@gmail.com",
+        "password": "123"
+    },
+    {
+        "nombres": "Ana",
+        "apellidoPaterno": "Ramírez",
+        "apellidoMaterno": "Sánchez",
+        "especialidad": "Pediatría",
+        "sede": "San Isidro",
+        "consultorio": "303",
+        "horarios": ["14:00", "15:00", "16:00", "17:00"],
+        "correoElectronico": "ana.ramirez@gmail.com",
+        "password": "123"
+    },
+    {
+        "nombres": "Luis",
+        "apellidoPaterno": "López",
+        "apellidoMaterno": "Fernández",
+        "especialidad": "Pediatría",
+        "sede": "Miraflores",
+        "consultorio": "304",
+        "horarios": ["14:00", "15:00", "16:00", "17:00"],
+        "correoElectronico": "luis.lopez@gmail.com",
+        "password": "123"
+    },
+    {
+        "nombres": "Pedro",
+        "apellidoPaterno": "Hernández",
+        "apellidoMaterno": "Cruz",
+        "especialidad": "Cardiología",
+        "sede": "San Isidro",
+        "consultorio": "305",
+        "horarios": ["14:00", "15:00", "16:00", "17:00"],
+        "correoElectronico": "pedro.hernandez@gmail.com",
+        "password": "123"
+    },
+    {
+        "nombres": "María",
+        "apellidoPaterno": "Morales",
+        "apellidoMaterno": "Díaz",
+        "especialidad": "Cardiología",
+        "sede": "Miraflores",
+        "consultorio": "306",
+        "horarios": ["14:00", "15:00", "16:00", "17:00"],
+        "correoElectronico": "maria.morales@gmail.com",
+        "password": "123"
+    },
+    {
+        "nombres": "José",
+        "apellidoPaterno": "Rivera",
+        "apellidoMaterno": "Gómez",
+        "especialidad": "Dermatología",
+        "sede": "San Isidro",
+        "consultorio": "307",
+        "horarios": ["14:00", "15:00", "16:00", "17:00"],
+        "correoElectronico": "jose.rivera@gmail.com",
+        "password": "123"
+    },
+    {
+        "nombres": "Laura",
+        "apellidoPaterno": "Torres",
+        "apellidoMaterno": "González",
+        "especialidad": "Dermatología",
+        "sede": "Miraflores",
+        "consultorio": "308",
+        "horarios": ["14:00", "15:00", "16:00", "17:00"],
+        "correoElectronico": "laura.torres@gmail.com",
+        "password": "123"
+    },
+    {
+        "nombres": "Elena",
+        "apellidoPaterno": "Castillo",
+        "apellidoMaterno": "Torres",
+        "especialidad": "Neurología",
+        "sede": "San Isidro",
+        "consultorio": "309",
+        "horarios": ["14:00", "15:00", "16:00", "17:00"],
+        "correoElectronico": "elena.castillo@gmail.com",
+        "password": "123"
+    },
+    {
+        "nombres": "Miguel",
+        "apellidoPaterno": "Vargas",
+        "apellidoMaterno": "Romero",
+        "especialidad": "Neurología",
+        "sede": "Miraflores",
+        "consultorio": "310",
+        "horarios": ["14:00", "15:00", "16:00", "17:00"],
+        "correoElectronico": "miguel.vargas@gmail.com",
+        "password": "123"
+    }
+]

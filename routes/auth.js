@@ -1,15 +1,16 @@
-// auth.js
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { check, validationResult } = require('express-validator');
 const User = require('../models/User');
+const Medico = require('../models/Médico');
 const router = express.Router();
 
+// auth.js - Backend
 router.post(
     '/login',
     [
-        check('dniOrCode', 'Se requiere un DNI o Código de colegiatura').not().isEmpty(),
+        check('dniOrCode', 'Se requiere un DNI o Correo electrónico').not().isEmpty(),
         check('password', 'La contraseña es obligatoria').exists(),
     ],
     async (req, res) => {
@@ -22,7 +23,6 @@ router.post(
 
         try {
             let user;
-            console.log(`Rol recibido: ${role}, DNI o código de colegiatura recibido: ${dniOrCode}`);
 
             if (role === 'user') {
                 // Buscar por DNI si es usuario
@@ -32,15 +32,13 @@ router.post(
                     return res.status(400).json({ msg: 'El usuario no existe' });
                 }
             } else if (role === 'doctor') {
-                // Buscar por código de colegiatura si es médico
-                user = await User.findOne({ where: { colegiatura: dniOrCode } });
+                // Buscar por correo electrónico si es médico
+                user = await Medico.findOne({ where: { correoElectronico: dniOrCode } });
                 if (!user) {
-                    console.log('Médico no encontrado con el código:', dniOrCode);
+                    console.log('Médico no encontrado con el correo:', dniOrCode);
                     return res.status(400).json({ msg: 'El médico no existe' });
                 }
             }
-
-            console.log('Usuario o médico encontrado:', user.nombres); // Verificar que el usuario fue encontrado
 
             // Comparar la contraseña con bcrypt
             const isMatch = await bcrypt.compare(password, user.password);
@@ -50,8 +48,8 @@ router.post(
             }
 
             console.log('Contraseña correcta, generando token JWT...');
-            // Si la contraseña es correcta, generar un token JWT
-            const payload = { user: { id: user.id, role: user.role } };
+            // Generar un token JWT
+            const payload = { user: { id: user.id, role: user.role || 'doctor' } };
 
             jwt.sign(
                 payload,
@@ -66,17 +64,17 @@ router.post(
                         token,
                         user: {
                             id: user.id,
-                            dni: user.dni,
+                            correoElectronico: user.correoElectronico,
                             apellidoPaterno: user.apellidoPaterno,
                             apellidoMaterno: user.apellidoMaterno,
                             nombres: user.nombres,
-                            fechaNacimiento: user.fechaNacimiento,
-                            numeroCelular: user.numeroCelular,
-                            genero: user.genero,
-                            correoElectronico: user.correoElectronico,
-                            role: user.role,
+                            role: user.role || 'doctor',
                             createdAt: user.createdAt,
-                            updatedAt: user.updatedAt
+                            updatedAt: user.updatedAt,
+                            // Agregar los campos adicionales necesarios
+                            genero: user.genero || 'No especificado',
+                            fechaNacimiento: user.fechaNacimiento || '',
+                        
                         }
                     });
                 }
