@@ -1,5 +1,5 @@
 const express = require('express');
-const { sendEmail } = require('../services/emailService');
+const { sendEmail } = require('../servicio/emailService');
 const router = express.Router();
 const Cita = require('../models/Cita');
 const Patient = require('../models/Patient');

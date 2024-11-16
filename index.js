@@ -3,7 +3,7 @@ const cors = require('cors');
 const sequelize = require('./config/database'); // Conexión a PostgreSQL
 const Medico = require('./models/Médico'); // Importa el modelo de Médico
 const Horario = require('./models/horario'); // Importa el modelo de Horario
-const { Cita, Patient, Medico } = require('./models/Asociaciones');
+const { Cita, Patient, MedicoR } = require('./models/Asociaciones');
 
 const userRoutes = require('./routes/users');
 const authRoutes = require('./routes/auth');
@@ -16,7 +16,7 @@ const cron = require('node-cron');
 const moment = require('moment');
 const nodemailer = require('nodemailer');
 const { Op } = require('sequelize');
-const { sendEmail } = require('./servicio/email');
+const { sendEmail } = require('./servicio/emailService');
 
 
 const app = express();
