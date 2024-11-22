@@ -97,33 +97,24 @@ const obtenerCitasUsuario = async (req, res) => {
       const citas = await Cita.findAll({
           where: { pacienteId },
           include: [
-              {
-                  model: MedicoR,
-                  as: 'medico', // Alias definido en las asociaciones
-                  attributes: ['nombres', 'apellidoPaterno', 'especialidad', 'sede'],
-              },
-              {
-                  model: User,
-                  as: 'usuario', // Alias definido en las asociaciones
-                  attributes: ['nombres', 'apellidoPaterno'],
-              },
+              { model: MedicoR, as: 'medico', attributes: ['nombres', 'apellidoPaterno', 'apellidoMaterno', 'sede'] }, // Incluye la sede
+              { model: User, as: 'usuario', attributes: ['nombres', 'apellidoPaterno'] },
           ],
       });
 
-      if (!citas.length) {
+      if (citas.length === 0) {
           return res.status(404).json({ message: 'No tiene citas programadas.' });
       }
 
-      // Formatear la respuesta
       const resumenCitas = citas.map((cita) => ({
           id: cita.id,
           especialidad: cita.especialidad,
           fecha: cita.fecha,
           hora: cita.hora,
           estado: cita.estado,
-          medico: `${cita.medico.nombres} ${cita.medico.apellidoPaterno}`,
+          medico: `${cita.medico.nombres} ${cita.medico.apellidoPaterno} ${cita.medico.apellidoMaterno}`,
           sede: cita.medico.sede,
-          paciente: `${cita.usuario.nombres} ${cita.usuario.apellidoPaterno}`,
+          tipoSeguro: cita.tipoSeguro, // Asegúrate de que este dato esté incluido
       }));
 
       res.status(200).json(resumenCitas);
@@ -132,6 +123,7 @@ const obtenerCitasUsuario = async (req, res) => {
       res.status(500).json({ message: 'Error al obtener las citas del usuario.' });
   }
 };
+
 
 
 module.exports = {
