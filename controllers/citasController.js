@@ -1,8 +1,10 @@
-const { Cita, Patient, MedicoR } = require('../models/Asociaciones'); // Importar asociaciones configuradas
+const { Cita, User, MedicoR } = require('../models/Asociaciones');
+
 
 // Registrar una cita
 const registrarCita = async (req, res) => {
   const { pacienteId, doctorId, fecha, hora, especialidad, sede, tipoSeguro, metodoPago } = req.body;
+  console.log("Datos entrantes:", req.body);
 
   try {
     // Verificar si ya existe una cita para el mismo doctor y horario
@@ -61,7 +63,6 @@ const verificarDisponibilidad = async (req, res) => {
   }
 };
 
-
 // Obtener horarios disponibles para un doctor en una fecha específica
 const obtenerHorariosDisponibles = async (req, res) => {
   const { doctorId, fecha } = req.params;
@@ -88,4 +89,54 @@ const obtenerHorariosDisponibles = async (req, res) => {
   }
 };
 
-module.exports = { registrarCita, verificarDisponibilidad, obtenerHorariosDisponibles };
+// Obtener el resumen de citas de un usuario
+const obtenerCitasUsuario = async (req, res) => {
+  const { pacienteId } = req.params;
+
+  try {
+      const citas = await Cita.findAll({
+          where: { pacienteId },
+          include: [
+              {
+                  model: MedicoR,
+                  as: 'medico', // Alias definido en las asociaciones
+                  attributes: ['nombres', 'apellidoPaterno', 'especialidad', 'sede'],
+              },
+              {
+                  model: User,
+                  as: 'usuario', // Alias definido en las asociaciones
+                  attributes: ['nombres', 'apellidoPaterno'],
+              },
+          ],
+      });
+
+      if (!citas.length) {
+          return res.status(404).json({ message: 'No tiene citas programadas.' });
+      }
+
+      // Formatear la respuesta
+      const resumenCitas = citas.map((cita) => ({
+          id: cita.id,
+          especialidad: cita.especialidad,
+          fecha: cita.fecha,
+          hora: cita.hora,
+          estado: cita.estado,
+          medico: `${cita.medico.nombres} ${cita.medico.apellidoPaterno}`,
+          sede: cita.medico.sede,
+          paciente: `${cita.usuario.nombres} ${cita.usuario.apellidoPaterno}`,
+      }));
+
+      res.status(200).json(resumenCitas);
+  } catch (error) {
+      console.error('Error al obtener las citas del usuario:', error);
+      res.status(500).json({ message: 'Error al obtener las citas del usuario.' });
+  }
+};
+
+
+module.exports = {
+  registrarCita,
+  verificarDisponibilidad,
+  obtenerHorariosDisponibles,
+  obtenerCitasUsuario,
+};

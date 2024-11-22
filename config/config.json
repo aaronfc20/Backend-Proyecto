@@ -1,0 +1,44 @@
+{
+  "development": {
+    "username": "postgres",
+    "password": "Admin123",
+    "database": "postgres",
+    "host": "proyecto-postgres-server.postgres.database.azure.com",
+    "dialect": "postgres",
+    "port": 5432,
+    "dialectOptions": {
+      "ssl": {
+        "require": true,
+        "rejectUnauthorized": false
+      }
+    }
+  },
+  "test": {
+    "username": "postgres",
+    "password": "Admin123",
+    "database": "postgres",
+    "host": "proyecto-postgres-server.postgres.database.azure.com",
+    "dialect": "postgres",
+    "port": 5432,
+    "dialectOptions": {
+      "ssl": {
+        "require": true,
+        "rejectUnauthorized": false
+      }
+    }
+  },
+  "production": {
+    "username": "postgres",
+    "password": "Admin123",
+    "database": "postgres",
+    "host": "proyecto-postgres-server.postgres.database.azure.com",
+    "dialect": "postgres",
+    "port": 5432,
+    "dialectOptions": {
+      "ssl": {
+        "require": true,
+        "rejectUnauthorized": false
+      }
+    }
+  }
+}

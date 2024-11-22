@@ -1,14 +1,13 @@
-// models/associations.js
 const Cita = require('./Cita');
-const Patient = require('./Patient');
+const User = require('./User');
 const MedicoR = require('./Médico');
 
-// Configurar las asociaciones
-Patient.hasMany(Cita, { foreignKey: 'pacienteId', as: 'citas' });
-Cita.belongsTo(Patient, { foreignKey: 'pacienteId', as: 'paciente' });
+// Relación actualizada con Users
+User.hasMany(Cita, { foreignKey: 'pacienteId', as: 'citas' });
+Cita.belongsTo(User, { foreignKey: 'pacienteId', as: 'usuario' });
 
+// Relación con médicos
 MedicoR.hasMany(Cita, { foreignKey: 'doctorId', as: 'citas' });
 Cita.belongsTo(MedicoR, { foreignKey: 'doctorId', as: 'medico' });
 
-// Exportar para asegurarse de que las asociaciones estén configuradas
-module.exports = { Cita, Patient, MedicoR};
+module.exports = { Cita, User, MedicoR };

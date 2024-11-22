@@ -36,11 +36,11 @@ app.use(express.json());
 app.use(cors());
 
 // Sincronizar la base de datos con Sequelize y cargar los datos de médicos y horarios
-sequelize.sync({ alter: true })
+sequelize.sync()
     .then(async () => {
         console.log('Base de datos sincronizada');
 
-        // Cargar médicos desde medicos.json
+         /*Cargar médicos desde medicos.json
         const bcrypt = require('bcryptjs');
         const medicosData = require('./data/medicos.json');
 
@@ -58,7 +58,7 @@ sequelize.sync({ alter: true })
             console.log('Médicos cargados exitosamente');
         } catch (error) {
             console.error('Error al cargar médicos:', error);
-        }
+        }*/
     })
     .catch(err => {
         console.error('Error al sincronizar la base de datos:', err);
