@@ -39,8 +39,26 @@ app.use(cors());
 sequelize.sync({ alter: true })
     .then(async () => {
         console.log('Base de datos sincronizada');
-        
-        // Aquí puedes cargar los horarios si aún no existen en la base de datos.
+
+        // Cargar médicos desde medicos.json
+        const bcrypt = require('bcryptjs');
+        const medicosData = require('./data/medicos.json');
+
+        try {
+            // Encriptar contraseñas y preparar datos
+            const hashedMedicos = await Promise.all(
+                medicosData.map(async (medico) => {
+                    medico.password = await bcrypt.hash(medico.password, 10); // Cifrar contraseña
+                    return medico;
+                })
+            );
+
+            // Insertar médicos en la base de datos
+            await Medico.bulkCreate(hashedMedicos);
+            console.log('Médicos cargados exitosamente');
+        } catch (error) {
+            console.error('Error al cargar médicos:', error);
+        }
     })
     .catch(err => {
         console.error('Error al sincronizar la base de datos:', err);

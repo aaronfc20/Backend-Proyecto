@@ -4,14 +4,16 @@ const router = express.Router();
 const {
     obtenerMedicos,
     obtenerMedicosPorEspecialidad,
+    obtenerMedicosPorSedeYEspecialidad, // Nueva función
     crearMedico,
-    cargarMedicos // Asegúrate de que esta función esté exportada y definida en el controlador
+    cargarMedicos
 } = require('../controllers/Medico');
 
 // Rutas para operaciones CRUD de médicos
 router.get('/', obtenerMedicos);
 router.get('/especialidad/:especialidad', obtenerMedicosPorEspecialidad);
+router.get('/filtrar', obtenerMedicosPorSedeYEspecialidad); // Nueva ruta para filtrar médicos
 router.post('/', crearMedico);
-router.post('/cargar', cargarMedicos); // Ruta para cargar múltiples médicos desde JSON
+router.post('/cargar', cargarMedicos);
 
 module.exports = router;

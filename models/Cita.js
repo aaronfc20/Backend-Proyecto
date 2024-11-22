@@ -18,9 +18,25 @@ const Cita = sequelize.define('Cita', {
         type: DataTypes.INTEGER,
         allowNull: false
     },
+    especialidad: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    sede: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    tipoSeguro: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    metodoPago: {
+        type: DataTypes.STRING, // Ejemplo: 'pago_online', 'pago_dia_cita'
+        allowNull: false
+    },
     estado: {
         type: DataTypes.STRING,
-        defaultValue: 'pendiente'
+        defaultValue: 'pendiente' // Ejemplo: 'pendiente', 'confirmada', 'cancelada'
     }
 });
 

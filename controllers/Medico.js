@@ -24,6 +24,29 @@ exports.obtenerMedicosPorEspecialidad = async (req, res) => {
     }
 };
 
+// Obtener médicos por sede y especialidad
+exports.obtenerMedicosPorSedeYEspecialidad = async (req, res) => {
+    try {
+        const { sede, especialidad } = req.query;
+
+        // Filtrar médicos dinámicamente
+        const medicos = await Medico.findAll({
+            where: {
+                ...(sede && { sede }), // Filtrar por sede si se proporciona
+                ...(especialidad && { especialidad }), // Filtrar por especialidad si se proporciona
+            },
+        });
+
+        if (medicos.length === 0) {
+            return res.status(404).json({ message: 'No se encontraron médicos para los filtros proporcionados.' });
+        }
+
+        res.status(200).json(medicos);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al obtener los médicos', error });
+    }
+};
+
 // Crear un nuevo médico con contraseña cifrada
 exports.crearMedico = async (req, res) => {
     try {
@@ -49,6 +72,8 @@ exports.cargarMedicos = async (req, res) => {
         const nuevosMedicos = await Medico.bulkCreate(hashedMedicos);
         res.status(201).json(nuevosMedicos);
     } catch (error) {
+        console.error(error);
         res.status(500).json({ message: 'Error al cargar los médicos', error });
     }
 };
+

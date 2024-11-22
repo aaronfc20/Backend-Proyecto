@@ -1,24 +1,37 @@
 const express = require('express');
+const { registrarCita, verificarDisponibilidad, obtenerHorariosDisponibles } = require('../controllers/citasController'); // Importar funciones del controlador
 const { sendEmail } = require('../servicio/emailService');
 const router = express.Router();
-const Cita = require('../models/Cita');
-const Patient = require('../models/Patient');
-const User = require('../models/User'); // Modelo de usuarios para los doctores
+const { Cita, Patient, User } = require('../models/Asociaciones'); // Asegúrate de que las asociaciones estén configuradas correctamente
 
+// Ruta para registrar una cita
+router.post('/registrar', registrarCita);
+
+// Ruta para verificar disponibilidad de un horario
+router.get('/disponibilidad/:doctorId/:fecha/:hora', verificarDisponibilidad);
+
+// Ruta para obtener horarios disponibles de un doctor en una fecha
+router.get('/horarios-disponibles/:doctorId/:fecha', obtenerHorariosDisponibles);
+
+// Ruta para enviar un recordatorio de cita
 router.post('/send-reminder/:id', async (req, res) => {
     const { id } = req.params;
 
     try {
-        // Obtener la cita
-        const cita = await Cita.findByPk(id);
+        // Obtener la cita junto con paciente y doctor
+        const cita = await Cita.findByPk(id, {
+            include: [
+                { model: Patient, as: 'paciente' },
+                { model: User, as: 'medico' }
+            ]
+        });
+
         if (!cita) return res.status(404).json({ message: 'Cita no encontrada' });
 
-        // Obtener información del paciente
-        const patient = await Patient.findOne({ dni: cita.pacienteId });
-        if (!patient) return res.status(404).json({ message: 'Paciente no encontrado' });
+        const patient = cita.paciente;
+        const doctor = cita.medico;
 
-        // Obtener información del doctor
-        const doctor = await User.findByPk(cita.doctorId); // Relación directa
+        if (!patient) return res.status(404).json({ message: 'Paciente no encontrado' });
         if (!doctor || doctor.role !== 'doctor') return res.status(404).json({ message: 'Doctor no encontrado' });
 
         // Crear los correos
