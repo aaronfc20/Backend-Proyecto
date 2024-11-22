@@ -24,16 +24,19 @@ exports.obtenerMedicosPorEspecialidad = async (req, res) => {
     }
 };
 
-// Obtener médicos por sede y especialidad
+// Obtener médicos por sede, especialidad y tipo de cita
 exports.obtenerMedicosPorSedeYEspecialidad = async (req, res) => {
     try {
         const { sede, especialidad } = req.query;
 
-        // Filtrar médicos dinámicamente
+        // Verifica qué parámetros fueron enviados
+        console.log('Parámetros recibidos:', { sede, especialidad });
+
+        // Filtrar médicos dinámicamente según los parámetros proporcionados
         const medicos = await Medico.findAll({
             where: {
-                ...(sede && { sede }), // Filtrar por sede si se proporciona
-                ...(especialidad && { especialidad }), // Filtrar por especialidad si se proporciona
+                ...(sede && { sede }), // Filtrar por sede si está presente
+                ...(especialidad && { especialidad }), // Filtrar por especialidad si está presente
             },
         });
 
@@ -43,6 +46,7 @@ exports.obtenerMedicosPorSedeYEspecialidad = async (req, res) => {
 
         res.status(200).json(medicos);
     } catch (error) {
+        console.error('Error al obtener los médicos:', error);
         res.status(500).json({ message: 'Error al obtener los médicos', error });
     }
 };
@@ -76,4 +80,3 @@ exports.cargarMedicos = async (req, res) => {
         res.status(500).json({ message: 'Error al cargar los médicos', error });
     }
 };
-

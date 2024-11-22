@@ -1,43 +1,37 @@
 const { Cita, User, MedicoR } = require('../models/Asociaciones');
 
-
 // Registrar una cita
 const registrarCita = async (req, res) => {
-  const { pacienteId, doctorId, fecha, hora, especialidad, sede, tipoSeguro, metodoPago } = req.body;
-  console.log("Datos entrantes:", req.body);
-
   try {
-    // Verificar si ya existe una cita para el mismo doctor y horario
-    const citaExistente = await Cita.findOne({
-      where: { fecha, hora, doctorId },
-    });
+      const { pacienteId, doctorId, fecha, hora, especialidad, sede, tipoSeguro, metodoPago } = req.body;
 
-    if (citaExistente) {
-      return res.status(400).json({ message: 'Horario no disponible. Escoja otro horario.' });
-    }
+      if (!sede && metodoPago !== 'teleconsulta') {
+          return res.status(400).json({
+              message: 'El campo "sede" es obligatorio para citas presenciales.',
+          });
+      }
 
-    // Registrar la nueva cita
-    const nuevaCita = await Cita.create({
-      pacienteId,
-      doctorId,
-      fecha,
-      hora,
-      especialidad,
-      sede,
-      tipoSeguro,
-      metodoPago,
-      estado: 'pendiente', // Estado predeterminado
-    });
+      const nuevaCita = await Cita.create({
+          pacienteId,
+          doctorId,
+          fecha,
+          hora,
+          especialidad,
+          sede: sede || null,
+          tipoSeguro,
+          metodoPago,
+      });
 
-    res.status(201).json({
-      message: 'Cita registrada exitosamente.',
-      cita: nuevaCita,
-    });
+      res.status(201).json(nuevaCita);
   } catch (error) {
-    console.error('Error al registrar la cita:', error);
-    res.status(500).json({ message: 'Error al registrar la cita.' });
+      console.error('Error al registrar la cita:', error);
+      res.status(500).json({
+          message: 'Error al registrar la cita.',
+          error: error.message,
+      });
   }
 };
+
 
 // Verificar disponibilidad de un horario
 const verificarDisponibilidad = async (req, res) => {
@@ -94,36 +88,35 @@ const obtenerCitasUsuario = async (req, res) => {
   const { pacienteId } = req.params;
 
   try {
-      const citas = await Cita.findAll({
-          where: { pacienteId },
-          include: [
-              { model: MedicoR, as: 'medico', attributes: ['nombres', 'apellidoPaterno', 'apellidoMaterno', 'sede'] }, // Incluye la sede
-              { model: User, as: 'usuario', attributes: ['nombres', 'apellidoPaterno'] },
-          ],
-      });
+    const citas = await Cita.findAll({
+      where: { pacienteId },
+      include: [
+        { model: MedicoR, as: 'medico', attributes: ['nombres', 'apellidoPaterno', 'apellidoMaterno', 'sede'] }, // Incluye la sede
+        { model: User, as: 'usuario', attributes: ['nombres', 'apellidoPaterno'] },
+      ],
+    });
 
-      if (citas.length === 0) {
-          return res.status(404).json({ message: 'No tiene citas programadas.' });
-      }
+    if (citas.length === 0) {
+      return res.status(404).json({ message: 'No tiene citas programadas.' });
+    }
 
-      const resumenCitas = citas.map((cita) => ({
-          id: cita.id,
-          especialidad: cita.especialidad,
-          fecha: cita.fecha,
-          hora: cita.hora,
-          estado: cita.estado,
-          medico: `${cita.medico.nombres} ${cita.medico.apellidoPaterno} ${cita.medico.apellidoMaterno}`,
-          sede: cita.medico.sede,
-          tipoSeguro: cita.tipoSeguro, // Asegúrate de que este dato esté incluido
-      }));
+    const resumenCitas = citas.map((cita) => ({
+      id: cita.id,
+      especialidad: cita.especialidad,
+      fecha: cita.fecha,
+      hora: cita.hora,
+      estado: cita.estado,
+      medico: `${cita.medico.nombres} ${cita.medico.apellidoPaterno} ${cita.medico.apellidoMaterno}`,
+      sede: cita.sede ? cita.sede : cita.metodoPago === 'teleconsulta' ? 'Teleconsulta' : null,
+      tipoSeguro: cita.tipoSeguro, // Asegúrate de que este dato esté incluido
+    }));
 
-      res.status(200).json(resumenCitas);
+    res.status(200).json(resumenCitas);
   } catch (error) {
-      console.error('Error al obtener las citas del usuario:', error);
-      res.status(500).json({ message: 'Error al obtener las citas del usuario.' });
+    console.error('Error al obtener las citas del usuario:', error);
+    res.status(500).json({ message: 'Error al obtener las citas del usuario.' });
   }
 };
-
 
 
 module.exports = {

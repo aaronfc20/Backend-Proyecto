@@ -24,8 +24,9 @@ const Cita = sequelize.define('Cita', {
     },
     sede: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true, // Permitir valores nulos
     },
+    
     tipoSeguro: {
         type: DataTypes.STRING,
         allowNull: false

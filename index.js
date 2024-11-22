@@ -36,7 +36,7 @@ app.use(express.json());
 app.use(cors());
 
 // Sincronizar la base de datos con Sequelize y cargar los datos de médicos y horarios
-sequelize.sync()
+sequelize.sync({alter:true})
     .then(async () => {
         console.log('Base de datos sincronizada');
 
