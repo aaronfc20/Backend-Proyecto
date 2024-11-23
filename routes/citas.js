@@ -8,7 +8,7 @@ const {
 } = require('../controllers/citasController'); // Importar funciones del controlador
 const { sendEmail } = require('../servicio/emailService');
 const router = express.Router();
-const { Cita, User, Feedback } = require('../models/Asociaciones'); // Asegúrate de que las asociaciones estén configuradas correctamente
+const { Cita, User, MedicoR, Feedback } = require('../models/Asociaciones'); // Asegúrate de que las asociaciones estén configuradas correctamente
 
 // Ruta para registrar una cita
 router.post('/registrar', registrarCita);
@@ -21,6 +21,85 @@ router.get('/horarios-disponibles/:doctorId/:fecha', obtenerHorariosDisponibles)
 
 // Ruta para obtener las citas de un usuario específico
 router.get('/usuario/:pacienteId', obtenerCitasUsuario);
+
+
+// Ruta para obtener las citas de un doctor específico
+
+router.get('/todas/:doctorId', async (req, res) => {
+    try {
+        const { doctorId } = req.params;
+
+        // Obtener las citas del doctor específico, incluyendo la información del paciente
+        const citas = await Cita.findAll({
+            where: {
+                doctorId: doctorId // Filtrar las citas por el ID del doctor
+            },
+            include: [
+                { model: User, as: 'usuario' }, // Incluir la información del paciente
+            ]
+        });
+
+        // Si no hay citas, devolver un mensaje adecuado
+        if (!citas || citas.length === 0) {
+            return res.status(404).json({ message: 'No hay citas registradas para este médico.' });
+        }
+
+        // Formatear las citas para que el frontend las pueda usar
+        const citasFormateadas = citas.map(cita => ({
+            id: cita.id,
+            paciente: {
+                nombreCompleto: `${cita.usuario.nombres} ${cita.usuario.apellidoPaterno}`
+            },
+            fecha: cita.fecha,
+            hora: cita.hora,
+            horaFin: cita.horaFin
+        }));
+
+        // Devolver las citas como respuesta
+        res.status(200).json(citasFormateadas);
+    } catch (error) {
+        console.error('Error al obtener las citas del doctor:', error);
+        res.status(500).json({ message: 'Hubo un problema al obtener las citas del doctor.' });
+    }
+});
+
+//Ruta para obtener todas las citas
+router.get('/todas', async (req, res) => {
+    try {
+        // Obtener todas las citas, incluyendo el usuario y el médico relacionados
+        const citas = await Cita.findAll({
+            include: [
+                { model: User, as: 'usuario' }, // Incluye la información del paciente
+                { model: MedicoR, as: 'medico' }    // Incluye la información del médico
+            ]
+        });
+
+        // Si no hay citas, devolver un mensaje adecuado
+        if (!citas || citas.length === 0) {
+            return res.status(404).json({ message: 'No hay citas registradas.' });
+        }
+
+        // Formatear las citas para que el frontend las pueda usar
+        const citasFormateadas = citas.map(cita => ({
+            id: cita.id,
+            paciente: {
+                nombreCompleto: `${cita.usuario.nombres} ${cita.usuario.apellidoPaterno}`
+            },
+            medico: {
+                nombre: `${cita.medico.nombres} ${cita.medico.apellidoPaterno}`
+            },
+            fecha: cita.fecha,
+            hora: cita.hora,
+            horaFin: cita.horaFin
+        }));
+
+        // Devolver las citas como respuesta
+        res.status(200).json(citasFormateadas);
+    } catch (error) {
+        console.error('Error al obtener todas las citas:', error);
+        res.status(500).json({ message: 'Hubo un problema al obtener las citas.' });
+    }
+});
 
 router.post('/:citaId/feedback', async (req, res) => {
     try {
@@ -51,7 +130,7 @@ router.post('/send-reminder/:id', async (req, res) => {
         const cita = await Cita.findByPk(id, {
             include: [
                 { model: User, as: 'usuario' }, // Paciente
-                { model: User, as: 'medico' }  // Médico
+                { model: MedicoR, as: 'medico' }  // Médico
             ]
         });
 
