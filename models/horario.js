@@ -1,5 +1,7 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database'); // Asegúrate de que la conexión esté configurada
+const Database = require('../config/database'); // Asegúrate de que la conexión esté configurada
+
+const sequelize = Database.getConnection();
 
 const Horario = sequelize.define('Horario', {
     fecha: {

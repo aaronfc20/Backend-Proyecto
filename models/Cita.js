@@ -1,53 +1,45 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const Database = require('../config/database');
+
+const sequelize = Database.getConnection();
 
 const Cita = sequelize.define('Cita', {
     fecha: {
         type: DataTypes.DATEONLY,
-        allowNull: false
+        allowNull: false,
     },
     hora: {
         type: DataTypes.TIME,
-        allowNull: false
+        allowNull: false,
     },
     pacienteId: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: false,
     },
     doctorId: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: false,
     },
     especialidad: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
     },
     sede: {
         type: DataTypes.STRING,
         allowNull: true, // Permitir valores nulos
     },
-    
     tipoSeguro: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
     },
     metodoPago: {
         type: DataTypes.STRING, // Ejemplo: 'pago_online', 'pago_dia_cita'
-        allowNull: false
+        allowNull: false,
     },
     estado: {
         type: DataTypes.STRING,
-        defaultValue: 'pendiente' // Ejemplo: 'pendiente', 'confirmada', 'cancelada'
-    }
-
+        defaultValue: 'pendiente', // Ejemplo: 'pendiente', 'confirmada', 'cancelada'
+    },
 });
-
-Cita.associate = (models) => {
-    Cita.hasMany(models.Feedback, {
-      foreignKey: 'citaId',
-      as: 'feedbacks',
-      onDelete: 'CASCADE',
-    });
-  };
 
 module.exports = Cita;

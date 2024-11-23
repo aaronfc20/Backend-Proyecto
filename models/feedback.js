@@ -19,5 +19,5 @@ module.exports = (sequelize, DataTypes) => {
     });
   };
 
-  return Feedback; // Esto estaba mal colocado en tu código original
+  return Feedback;
 };
