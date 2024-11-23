@@ -3,11 +3,12 @@ const {
     registrarCita, 
     verificarDisponibilidad, 
     obtenerHorariosDisponibles, 
-    obtenerCitasUsuario 
+    obtenerCitasUsuario,
+    registrarFeedback
 } = require('../controllers/citasController'); // Importar funciones del controlador
 const { sendEmail } = require('../servicio/emailService');
 const router = express.Router();
-const { Cita, User } = require('../models/Asociaciones'); // Asegúrate de que las asociaciones estén configuradas correctamente
+const { Cita, User, Feedback } = require('../models/Asociaciones'); // Asegúrate de que las asociaciones estén configuradas correctamente
 
 // Ruta para registrar una cita
 router.post('/registrar', registrarCita);
@@ -20,6 +21,25 @@ router.get('/horarios-disponibles/:doctorId/:fecha', obtenerHorariosDisponibles)
 
 // Ruta para obtener las citas de un usuario específico
 router.get('/usuario/:pacienteId', obtenerCitasUsuario);
+
+router.post('/:citaId/feedback', async (req, res) => {
+    try {
+        const { citaId } = req.params;
+        const { rating, feedback } = req.body;
+
+        // Crear el feedback en la base de datos
+        const newFeedback = await Feedback.create({
+            citaId,
+            puntaje: rating,
+            comentario: feedback,
+        });
+
+        res.status(201).json(newFeedback);
+    } catch (error) {
+        console.error('Error al guardar el feedback:', error);
+        res.status(500).json({ message: 'Hubo un problema al guardar el feedback.' });
+    }
+});
 
 
 // Ruta para enviar un recordatorio de cita

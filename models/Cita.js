@@ -39,6 +39,15 @@ const Cita = sequelize.define('Cita', {
         type: DataTypes.STRING,
         defaultValue: 'pendiente' // Ejemplo: 'pendiente', 'confirmada', 'cancelada'
     }
+
 });
+
+Cita.associate = (models) => {
+    Cita.hasMany(models.Feedback, {
+      foreignKey: 'citaId',
+      as: 'feedbacks',
+      onDelete: 'CASCADE',
+    });
+  };
 
 module.exports = Cita;

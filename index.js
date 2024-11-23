@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const Sequelize = require('sequelize'); // Importa Sequelize
 const sequelize = require('./config/database'); // Conexión a PostgreSQL
 const Medico = require('./models/Médico'); // Importa el modelo de Médico
 const Horario = require('./models/horario'); // Importa el modelo de Horario
@@ -16,18 +17,18 @@ const cron = require('node-cron');
 const moment = require('moment');
 const nodemailer = require('nodemailer');
 const { Op } = require('sequelize');
+const Feedback = require('./models/feedback')(sequelize, Sequelize.DataTypes); // Ajustado
 const { sendEmail } = require('./servicio/emailService');
-
 
 const app = express();
 const port = 3001;
 
 // Configuración del transporter para nodemailer
 const transporter = nodemailer.createTransport({
-    service: 'gmail', // Cambia esto si usas otro proveedor
+    service: 'gmail',
     auth: {
-        user: 'tu-email@gmail.com', // Cambia esto por tu correo
-        pass: 'tu-contraseña-app', // Usa una contraseña de aplicación si usas Gmail
+        user: 'tu-email@gmail.com',
+        pass: 'tu-contraseña-app',
     },
 });
 
@@ -36,29 +37,9 @@ app.use(express.json());
 app.use(cors());
 
 // Sincronizar la base de datos con Sequelize y cargar los datos de médicos y horarios
-sequelize.sync({alter:true})
+sequelize.sync()
     .then(async () => {
         console.log('Base de datos sincronizada');
-
-         /*Cargar médicos desde medicos.json
-        const bcrypt = require('bcryptjs');
-        const medicosData = require('./data/medicos.json');
-
-        try {
-            // Encriptar contraseñas y preparar datos
-            const hashedMedicos = await Promise.all(
-                medicosData.map(async (medico) => {
-                    medico.password = await bcrypt.hash(medico.password, 10); // Cifrar contraseña
-                    return medico;
-                })
-            );
-
-            // Insertar médicos en la base de datos
-            await Medico.bulkCreate(hashedMedicos);
-            console.log('Médicos cargados exitosamente');
-        } catch (error) {
-            console.error('Error al cargar médicos:', error);
-        }*/
     })
     .catch(err => {
         console.error('Error al sincronizar la base de datos:', err);
@@ -70,7 +51,7 @@ app.use('/api/auth', authRoutes);
 app.use('/citas', citaRoutes);
 app.use('/patients', patientRoutes);
 app.use('/api/medicos', medicoRoutes);
-app.use('/api/horarios', horarioRoutes); // Usar las rutas de horarios
+app.use('/api/horarios', horarioRoutes);
 
 // Ruta principal
 app.get('/', (req, res) => {
@@ -78,14 +59,14 @@ app.get('/', (req, res) => {
 });
 
 // Tarea programada con node-cron para enviar recordatorios de citas
-cron.schedule('0 9 * * *', async () => { // Se ejecutará todos los días a las 9:00 AM
+cron.schedule('0 9 * * *', async () => {
     console.log('Ejecutando tarea programada para enviar recordatorios de citas...');
 
     try {
         const citasProximas = await Cita.findAll({
             where: {
                 fecha: {
-                    [Op.eq]: moment().add(3, 'days').format('YYYY-MM-DD'), // Citas dentro de 3 días
+                    [Op.eq]: moment().add(3, 'days').format('YYYY-MM-DD'),
                 },
             },
             include: [
@@ -107,10 +88,9 @@ cron.schedule('0 9 * * *', async () => { // Se ejecutará todos los días a las 
             const patientEmail = patient.correoElectronico;
             const doctorEmail = doctor.correoElectronico;
 
-            // Configuración del correo
             const mailOptions = {
                 from: '"Sistema Médico" <no-reply@tuapp.com>',
-                to: `${patientEmail}, ${doctorEmail}`, // Enviar a ambos
+                to: `${patientEmail}, ${doctorEmail}`,
                 subject: 'Recordatorio de Cita Médica',
                 text: `Hola, esta es una notificación sobre la cita programada:\n\n
                 - Paciente: ${patient.nombreCompleto}
@@ -132,9 +112,7 @@ cron.schedule('0 9 * * *', async () => { // Se ejecutará todos los días a las 
     }
 });
 
-
 // Iniciar el servidor
 app.listen(port, () => {
     console.log(`Servidor corriendo en http://localhost:${port}`);
 });
-

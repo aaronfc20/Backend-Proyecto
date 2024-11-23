@@ -1,4 +1,5 @@
 const { Cita, User, MedicoR } = require('../models/Asociaciones');
+const { Feedback } = require('../models/feedback');
 
 // Registrar una cita
 const registrarCita = async (req, res) => {
@@ -118,10 +119,36 @@ const obtenerCitasUsuario = async (req, res) => {
   }
 };
 
+const registrarFeedback = async (req, res) => {
+  const { citaId } = req.params;
+  const { puntaje, comentario } = req.body;
+
+  try {
+    // Verificar que la cita existe
+    const cita = await Cita.findByPk(citaId);
+    if (!cita) {
+      return res.status(404).json({ message: 'Cita no encontrada' });
+    }
+
+    // Registrar el feedback
+    const feedback = await Feedback.create({
+      citaId,
+      puntaje,
+      comentario,
+    });
+
+    res.status(201).json(feedback);
+  } catch (error) {
+    console.error('Error al registrar feedback:', error);
+    res.status(500).json({ message: 'Error al registrar feedback' });
+  }
+};
+
 
 module.exports = {
   registrarCita,
   verificarDisponibilidad,
   obtenerHorariosDisponibles,
   obtenerCitasUsuario,
+  registrarFeedback,
 };
