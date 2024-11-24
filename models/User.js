@@ -1,6 +1,8 @@
 // models/User.js
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const Database = require('../config/database');
+
+const sequelize = Database.getConnection();
 
 const User = sequelize.define('User', {
     dni: {

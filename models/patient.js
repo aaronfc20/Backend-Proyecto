@@ -1,42 +1,43 @@
-// models/Patient.js
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const Database = require('../config/database'); // Importa el Singleton
+
+const sequelize = Database.getConnection(); // Obtén la conexión desde el Singleton
 
 const Patient = sequelize.define('Patient', {
     nombreCompleto: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
     },
     dateOfBirth: {
         type: DataTypes.DATEONLY,
-        allowNull: false
+        allowNull: false,
     },
     correoElectronico: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true
+        unique: true,
     },
     doctor: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
     },
     specialty: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
     },
     diagnosis: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
     },
     treatment: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
     },
     dni: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true
-    }
+        unique: true,
+    },
 });
 
 module.exports = Patient;

@@ -1,4 +1,9 @@
-const Cita = require('./Cita');
+const Database = require('../config/database'); // Importa el Singleton
+const sequelize = Database.getConnection(); // Obtén la conexión
+const { DataTypes } = require('sequelize');
+
+// Inicialización de modelos
+const Cita = require('./Cita'); // Si este modelo ya está inicializado directamente, no se necesita inicializar aquí.
 const User = require('./User');
 const MedicoR = require('./Médico');
 const Feedback = require('./feedback')(require('../config/database'), require('sequelize').DataTypes); // Cambiar aquí

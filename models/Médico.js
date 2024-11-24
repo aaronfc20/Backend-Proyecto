@@ -1,5 +1,7 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const Database = require('../config/database'); // Importa el Singleton
+
+const sequelize = Database.getConnection(); // Obtén la conexión compartida
 
 const Medico = sequelize.define('Medico', {
     id: {
