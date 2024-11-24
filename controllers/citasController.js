@@ -1,35 +1,76 @@
-const { Cita, User, MedicoR } = require('../models/Asociaciones');
 const { Feedback } = require('../models/feedback');
+
+const { Cita, User, MedicoR, Patient } = require('../models/Asociaciones');
+
 
 // Registrar una cita
 const registrarCita = async (req, res) => {
   try {
-      const { pacienteId, doctorId, fecha, hora, especialidad, sede, tipoSeguro, metodoPago } = req.body;
+    const { pacienteId, doctorId, fecha, hora, especialidad, sede, tipoSeguro, metodoPago } = req.body;
 
-      if (!sede && metodoPago !== 'teleconsulta') {
-          return res.status(400).json({
-              message: 'El campo "sede" es obligatorio para citas presenciales.',
-          });
-      }
+    if (!sede && metodoPago !== 'teleconsulta') {
+        return res.status(400).json({
+            message: 'El campo "sede" es obligatorio para citas presenciales.',
+        });
+    }
 
-      const nuevaCita = await Cita.create({
-          pacienteId,
-          doctorId,
-          fecha,
-          hora,
-          especialidad,
-          sede: sede || null,
-          tipoSeguro,
-          metodoPago,
-      });
+    // Crear la nueva cita
+    const nuevaCita = await Cita.create({
+        pacienteId,
+        doctorId,
+        fecha,
+        hora,
+        especialidad,
+        sede: sede || null,
+        tipoSeguro,
+        metodoPago,
+    });
 
-      res.status(201).json(nuevaCita);
+    // Obtener la información del paciente
+    const usuarioPaciente = await User.findByPk(pacienteId);
+
+    if (!usuarioPaciente) {
+        return res.status(404).json({ error: 'El paciente no existe en la base de datos de usuarios.' });
+    }
+
+    // Verificar si el paciente ya existe en la tabla Patients
+    let paciente = await Patient.findOne({ where: { dni: usuarioPaciente.dni } });
+
+    if (paciente) {
+        // Actualizar la información del paciente si ya existe
+        paciente.nombreCompleto = `${usuarioPaciente.nombres} ${usuarioPaciente.apellidoPaterno} ${usuarioPaciente.apellidoMaterno}`;
+        paciente.diagnosis = paciente.diagnosis || 'No hay diagnóstico registrado';
+        paciente.treatment = `Cita programada para el ${fecha} a las ${hora}`;
+    } else {
+        // Crear un nuevo registro del paciente si no existe
+        paciente = await Patient.create({
+            nombreCompleto: `${usuarioPaciente.nombres} ${usuarioPaciente.apellidoPaterno} ${usuarioPaciente.apellidoMaterno}`,
+            dateOfBirth: usuarioPaciente.fechaNacimiento,
+            correoElectronico: usuarioPaciente.correoElectronico,
+            dni: usuarioPaciente.dni,
+            doctor: doctorId, // Asumimos que el doctor será asignado con el doctorId de la cita
+            specialty: especialidad,
+            diagnosis: 'Pendiente de diagnóstico',
+            treatment: `Cita programada para el ${fecha} a las ${hora}`,
+        });
+    }
+
+    // Guardar los cambios del paciente si es necesario
+    await paciente.save();
+
+    // Responder con la cita y la información del paciente
+    res.status(201).json({
+        message: 'Cita registrada exitosamente y datos del paciente actualizados.',
+        cita: nuevaCita,
+        paciente
+    });
+
   } catch (error) {
-      console.error('Error al registrar la cita:', error);
-      res.status(500).json({
-          message: 'Error al registrar la cita.',
-          error: error.message,
-      });
+    console.error('Error al registrar la cita:', error);
+    res.status(500).json({
+        message: 'Error al registrar la cita.',
+        error: error.message,
+    });
   }
 };
 

@@ -1,10 +1,20 @@
 const express = require('express');
+const { Op } = require('sequelize'); // Para búsquedas avanzadas
 const router = express.Router();
-const Patient = require('../models/Patient');
+const Patient = require('../models/patient');
 
 // Registrar un nuevo paciente
-router.post('/', async (req, res) => {
+router.post('/registrar', async (req, res) => {
     try {
+        const { dni } = req.body;
+
+        // Verificar si ya existe un paciente con el mismo DNI
+        const existingPatient = await Patient.findOne({ where: { dni } });
+
+        if (existingPatient) {
+            return res.status(409).json({ message: 'El paciente con este DNI ya está registrado.' });
+        }
+
         const newPatient = await Patient.create(req.body);
         res.status(201).json(newPatient);
     } catch (error) {
