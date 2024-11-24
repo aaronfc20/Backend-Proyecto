@@ -6,7 +6,7 @@ const { DataTypes } = require('sequelize');
 const Cita = require('./Cita'); // Si este modelo ya está inicializado directamente, no se necesita inicializar aquí.
 const User = require('./User');
 const MedicoR = require('./Médico');
-const Feedback = require('./feedback')(require('../config/database'), require('sequelize').DataTypes); // Cambiar aquí
+const Feedback = require('./feedback')(sequelize, DataTypes); // Inicializa Feedback con sequelize y DataTypes
 const Patient = require('./patient')
 
 // Relación entre User y Cita
