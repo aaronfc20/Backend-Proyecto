@@ -6,9 +6,10 @@ const {
     obtenerCitasUsuario,
     registrarFeedback
 } = require('../controllers/citasController'); // Importar funciones del controlador
-const { sendEmail } = require('../servicio/emailService');
+const { enviarCorreo } = require('../servicio/emailService');
+
 const router = express.Router();
-const { Cita, User, MedicoR, Feedback } = require('../models/Asociaciones'); // Asegúrate de que las asociaciones estén configuradas correctamente
+const { Cita, User, MedicoR, Feedback, Patient } = require('../models/Asociaciones'); // Asegúrate de que las asociaciones estén configuradas correctamente
 
 // Ruta para registrar una cita
 router.post('/registrar', registrarCita);
@@ -120,40 +121,46 @@ router.post('/:citaId/feedback', async (req, res) => {
     }
 });
 
-
-// Ruta para enviar un recordatorio de cita
-router.post('/send-reminder/:id', async (req, res) => {
+// Ruta para notificar al paciente
+router.post('/notificar/:id', async (req, res) => {
     const { id } = req.params;
 
     try {
-        // Obtener la cita junto con usuario y médico
+        // Buscar la cita por ID, incluyendo el paciente (User) y el médico (Medico)
         const cita = await Cita.findByPk(id, {
             include: [
-                { model: User, as: 'usuario' }, // Paciente
-                { model: MedicoR, as: 'medico' }  // Médico
+                { model: User, as: 'usuario' }, // Alias 'usuario' para el paciente
+                { model: MedicoR, as: 'medico' } // Alias 'medico' para el doctor
             ]
         });
 
-        if (!cita) return res.status(404).json({ message: 'Cita no encontrada' });
+        if (!cita) {
+            return res.status(404).json({ message: 'Cita no encontrada.' });
+        }
 
-        const patientName = `${cita.usuario.nombres} ${cita.usuario.apellidoPaterno}`;
-        const doctorName = `${cita.medico.nombres} ${cita.medico.apellidoPaterno}`;
+        // Obtener el paciente (usuario) y verificar si tiene correo electrónico
+        const paciente = cita.usuario; // Usamos 'usuario' ya que es el alias definido
+        const medico = cita.medico; // Usamos 'medico' ya que es el alias definido
 
-        // Crear los correos
-        const patientSubject = 'Recordatorio de Cita Médica';
-        const patientText = `Hola ${patientName},\n\nTe recordamos que tienes una cita programada para el día ${cita.fecha} a las ${cita.hora}.\n\nGracias,`;
+        // Verificar si los datos son correctos
+        console.log('Paciente:', paciente); // Verificar paciente
+        console.log('Médico:', medico); // Verificar médico
 
-        const doctorSubject = 'Recordatorio de Cita con Paciente';
-        const doctorText = `Hola Dr. ${doctorName},\n\nLe recordamos que tiene una cita programada con el paciente ${patientName} el día ${cita.fecha} a las ${cita.hora}.\n\nGracias,`;
+        if (!paciente || !paciente.correoElectronico) {
+            return res.status(400).json({ message: 'El paciente no tiene correo electrónico.' });
+        }
 
-        // Enviar correos
-        await sendEmail(cita.usuario.correoElectronico, patientSubject, patientText);
-        await sendEmail(cita.medico.correoElectronico, doctorSubject, doctorText);
+        // Enviar el correo al paciente
+        await enviarCorreo({
+            to: paciente.correoElectronico, // Correo del paciente
+            subject: 'Recordatorio de Cita Médica',
+            text: `Estimado/a ${paciente.nombres} ${paciente.apellidoPaterno} ${paciente.apellidoMaterno}, su cita con el Dr. ${medico.nombres} ${medico.apellidoPaterno} ${medico.apellidoMaterno} es a las ${cita.hora}.`
+        });
 
-        res.status(200).json({ message: 'Correos enviados con éxito' });
+        res.status(200).json({ message: 'Correo enviado correctamente.' });
     } catch (error) {
-        console.error('Error en /send-reminder:', error);
-        res.status(500).json({ message: 'Error al enviar los correos.' });
+        console.error('Error al notificar al paciente:', error);
+        res.status(500).json({ message: 'Error al enviar el correo.' });
     }
 });
 
