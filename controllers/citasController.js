@@ -1,79 +1,48 @@
+const { Cita, User, MedicoR } = require('../models/Asociaciones');
 const { Feedback } = require('../models/feedback');
-
-const { Cita, User, MedicoR, Patient } = require('../models/Asociaciones');
-
 
 // Registrar una cita
 const registrarCita = async (req, res) => {
   try {
     const { pacienteId, doctorId, fecha, hora, especialidad, sede, tipoSeguro, metodoPago } = req.body;
 
+    // Validar datos obligatorios
+    if (!pacienteId || !doctorId || !fecha || !hora || !especialidad || !tipoSeguro || !metodoPago) {
+      return res.status(400).json({
+        message: 'Faltan datos obligatorios para registrar la cita.',
+      });
+    }
+
     if (!sede && metodoPago !== 'teleconsulta') {
-        return res.status(400).json({
-            message: 'El campo "sede" es obligatorio para citas presenciales.',
-        });
+      return res.status(400).json({
+        message: 'El campo "sede" es obligatorio para citas presenciales.',
+      });
     }
 
     // Crear la nueva cita
     const nuevaCita = await Cita.create({
-        pacienteId,
-        doctorId,
-        fecha,
-        hora,
-        especialidad,
-        sede: sede || null,
-        tipoSeguro,
-        metodoPago,
+      pacienteId,
+      doctorId,
+      fecha,
+      hora,
+      especialidad,
+      sede: sede || null,
+      tipoSeguro,
+      metodoPago,
     });
 
-    // Obtener la información del paciente
-    const usuarioPaciente = await User.findByPk(pacienteId);
-
-    if (!usuarioPaciente) {
-        return res.status(404).json({ error: 'El paciente no existe en la base de datos de usuarios.' });
-    }
-
-    // Verificar si el paciente ya existe en la tabla Patients
-    let paciente = await Patient.findOne({ where: { dni: usuarioPaciente.dni } });
-
-    if (paciente) {
-        // Actualizar la información del paciente si ya existe
-        paciente.nombreCompleto = `${usuarioPaciente.nombres} ${usuarioPaciente.apellidoPaterno} ${usuarioPaciente.apellidoMaterno}`;
-        paciente.diagnosis = paciente.diagnosis || 'No hay diagnóstico registrado';
-        paciente.treatment = `Cita programada para el ${fecha} a las ${hora}`;
-    } else {
-        // Crear un nuevo registro del paciente si no existe
-        paciente = await Patient.create({
-            nombreCompleto: `${usuarioPaciente.nombres} ${usuarioPaciente.apellidoPaterno} ${usuarioPaciente.apellidoMaterno}`,
-            dateOfBirth: usuarioPaciente.fechaNacimiento,
-            correoElectronico: usuarioPaciente.correoElectronico,
-            dni: usuarioPaciente.dni,
-            doctor: doctorId, // Asumimos que el doctor será asignado con el doctorId de la cita
-            specialty: especialidad,
-            diagnosis: 'Pendiente de diagnóstico',
-            treatment: `Cita programada para el ${fecha} a las ${hora}`,
-        });
-    }
-
-    // Guardar los cambios del paciente si es necesario
-    await paciente.save();
-
-    // Responder con la cita y la información del paciente
     res.status(201).json({
-        message: 'Cita registrada exitosamente y datos del paciente actualizados.',
-        cita: nuevaCita,
-        paciente
+      message: 'Cita registrada exitosamente.',
+      cita: nuevaCita,
     });
-
   } catch (error) {
     console.error('Error al registrar la cita:', error);
     res.status(500).json({
-        message: 'Error al registrar la cita.',
-        error: error.message,
+      message: 'Error al registrar la cita.',
+      error: error.message,
     });
   }
 };
-
 
 // Verificar disponibilidad de un horario
 const verificarDisponibilidad = async (req, res) => {
@@ -104,7 +73,6 @@ const obtenerHorariosDisponibles = async (req, res) => {
   const { doctorId, fecha } = req.params;
 
   try {
-    // Buscar todas las citas del doctor en la fecha dada
     const citas = await Cita.findAll({
       where: { doctorId, fecha },
       attributes: ['hora'],
@@ -112,7 +80,6 @@ const obtenerHorariosDisponibles = async (req, res) => {
 
     const horasReservadas = citas.map((cita) => cita.hora);
 
-    // Lista de horarios disponibles (ajústala según tu lógica de horarios)
     const horariosDisponibles = [
       '08:00', '09:00', '10:00', '11:00', '12:00',
       '13:00', '14:00', '15:00', '16:00', '17:00',
@@ -133,7 +100,7 @@ const obtenerCitasUsuario = async (req, res) => {
     const citas = await Cita.findAll({
       where: { pacienteId },
       include: [
-        { model: MedicoR, as: 'medico', attributes: ['nombres', 'apellidoPaterno', 'apellidoMaterno', 'sede'] }, // Incluye la sede
+        { model: MedicoR, as: 'medico', attributes: ['nombres', 'apellidoPaterno', 'apellidoMaterno', 'sede'] },
         { model: User, as: 'usuario', attributes: ['nombres', 'apellidoPaterno'] },
       ],
     });
@@ -149,8 +116,8 @@ const obtenerCitasUsuario = async (req, res) => {
       hora: cita.hora,
       estado: cita.estado,
       medico: `${cita.medico.nombres} ${cita.medico.apellidoPaterno} ${cita.medico.apellidoMaterno}`,
-      sede: cita.sede ? cita.sede : cita.metodoPago === 'teleconsulta' ? 'Teleconsulta' : null,
-      tipoSeguro: cita.tipoSeguro, // Asegúrate de que este dato esté incluido
+      sede: cita.sede || (cita.metodoPago === 'teleconsulta' ? 'Teleconsulta' : null),
+      tipoSeguro: cita.tipoSeguro,
     }));
 
     res.status(200).json(resumenCitas);
@@ -160,6 +127,7 @@ const obtenerCitasUsuario = async (req, res) => {
   }
 };
 
+// Registrar feedback
 const registrarFeedback = async (req, res) => {
   const { citaId } = req.params;
   const { puntaje, comentario } = req.body;
@@ -184,7 +152,6 @@ const registrarFeedback = async (req, res) => {
     res.status(500).json({ message: 'Error al registrar feedback' });
   }
 };
-
 
 module.exports = {
   registrarCita,
